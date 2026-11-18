@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -8,8 +9,10 @@
 
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
+    <!-- HEADER -->
     <header class="header">
         <div class="container">
             <h1>Evaluation Calculator</h1>
@@ -17,13 +20,16 @@
         </div>
     </header>
 
+
     <main class="container">
 
-        <!-- ตั้งค่าแบบประเมิน -->
+        <!-- SECTION 1 -->
         <section class="card">
+
             <h2>1. ตั้งค่าแบบประเมิน</h2>
 
             <div class="form-group">
+
                 <label for="totalRespondents">
                     จำนวนผู้ทำแบบประเมิน (N)
                 </label>
@@ -32,11 +38,16 @@
                     type="number"
                     id="totalRespondents"
                     min="1"
+                    step="1"
                     value="100"
+                    placeholder="กรอกจำนวนผู้ประเมิน"
                 >
+
             </div>
 
+
             <div class="form-group">
+
                 <label for="mainTopicCount">
                     จำนวนหัวข้อหลัก
                 </label>
@@ -45,43 +56,72 @@
                     type="number"
                     id="mainTopicCount"
                     min="1"
+                    max="50"
+                    step="1"
                     value="2"
+                    placeholder="กรอกจำนวนหัวข้อหลัก"
                 >
+
             </div>
 
-            <button id="createTopicsBtn" class="btn btn-primary">
-                สร้างหัวข้อประเมิน
+
+            <button
+                type="button"
+                id="createTopicsBtn"
+                class="btn btn-primary">
+
+                + สร้างหัวข้อประเมิน
+
             </button>
+
         </section>
 
-        <!-- พื้นที่หัวข้อประเมิน -->
+
+        <!-- SECTION 2 -->
         <section class="card">
+
             <h2>2. กรอกข้อมูลการประเมิน</h2>
 
+            <p class="section-description">
+                กดปุ่ม + หรือ − เพื่อเพิ่มหรือลดจำนวนผู้ตอบในแต่ละระดับ
+            </p>
+
             <div id="topicsContainer">
+
                 <p class="empty-message">
                     กรุณากำหนดจำนวนหัวข้อหลักแล้วกดสร้างหัวข้อ
                 </p>
+
             </div>
+
         </section>
 
-        <!-- ผลลัพธ์ -->
+
+        <!-- SECTION 3 -->
         <section class="card">
+
             <h2>3. ผลการคำนวณ</h2>
 
             <div id="resultsContainer">
+
                 <p class="empty-message">
                     ผลการคำนวณจะแสดงที่นี่
                 </p>
+
             </div>
+
         </section>
 
     </main>
 
+
+    <!-- FOOTER -->
     <footer>
         <p>Evaluation Calculator © 2026</p>
     </footer>
 
+
+    <!-- JAVASCRIPT -->
     <script src="script.js"></script>
 
 </body>
