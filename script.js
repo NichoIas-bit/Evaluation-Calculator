@@ -1,7 +1,13 @@
 
-/* =================================
-   ELEMENTS
-================================= */
+/* =========================================
+   EVALUATION CALCULATOR
+   ระบบคำนวณแบบประเมินความพึงพอใจ
+========================================= */
+
+
+/* =========================================
+   1. ELEMENTS
+========================================= */
 
 const totalRespondentsInput = document.getElementById("totalRespondents");
 const mainTopicCountInput = document.getElementById("mainTopicCount");
@@ -10,9 +16,9 @@ const topicsContainer = document.getElementById("topicsContainer");
 const resultsContainer = document.getElementById("resultsContainer");
 
 
-/* =================================
-   DATA
-================================= */
+/* =========================================
+   2. DATA
+========================================= */
 
 let topics = [];
 
@@ -25,9 +31,9 @@ const ratingLevels = [
 ];
 
 
-/* =================================
-   CREATE MAIN TOPICS
-================================= */
+/* =========================================
+   3. CREATE MAIN TOPICS
+========================================= */
 
 createTopicsBtn.addEventListener("click", () => {
 
@@ -50,16 +56,14 @@ createTopicsBtn.addEventListener("click", () => {
     }));
 
     renderTopics();
-
-    resultsContainer.innerHTML =
-        '<p class="empty-message">กรุณากรอกข้อมูลเพื่อคำนวณ</p>';
+    calculateResults();
 
 });
 
 
-/* =================================
-   RENDER TOPICS
-================================= */
+/* =========================================
+   4. RENDER MAIN TOPICS
+========================================= */
 
 function renderTopics() {
 
@@ -72,38 +76,51 @@ function renderTopics() {
         topicElement.className = "main-topic";
 
         topicElement.innerHTML = `
+
             <div class="main-topic-header">
 
                 <h3>หัวข้อหลัก ${topic.id}</h3>
 
                 <button
+                    type="button"
                     class="btn btn-add"
                     data-action="add-subtopic"
                     data-topic-id="${topic.id}">
+
                     + เพิ่มหัวข้อย่อย
+
                 </button>
 
             </div>
 
+
             <div class="form-group">
+
                 <label>ชื่อหัวข้อหลัก</label>
 
                 <input
                     type="text"
                     class="topic-name"
                     data-topic-id="${topic.id}"
-                    value="${topic.name}">
+                    value="${escapeHTML(topic.name)}">
+
             </div>
 
+
             <div class="subtopics-container">
+
                 ${
                     topic.subTopics.length === 0
+
                     ? '<p class="empty-message">ยังไม่มีหัวข้อย่อย</p>'
+
                     : topic.subTopics.map(sub =>
                         renderSubTopic(topic.id, sub)
                     ).join("")
                 }
+
             </div>
+
         `;
 
         topicsContainer.appendChild(topicElement);
@@ -113,10 +130,9 @@ function renderTopics() {
 }
 
 
-/* =================================
-   RENDER SUB TOPIC
-================================= */
-
+/* =========================================
+   5. RENDER SUB TOPICS
+========================================= */
 
 function renderSubTopic(topicId, sub) {
 
@@ -124,22 +140,31 @@ function renderSubTopic(topicId, sub) {
 
         <div class="rating-item">
 
-            <label>
-                ${level.key.toUpperCase()} (${level.score})
-                - ${level.label}
-            </label>
+            <div class="rating-label">
+
+                <strong>${level.key.toUpperCase()}</strong>
+
+                <span>${level.label}</span>
+
+                <small>คะแนน ${level.score}</small>
+
+            </div>
+
 
             <div class="number-control">
 
                 <button
                     type="button"
-                    class="number-btn"
+                    class="number-btn decrease-btn"
                     data-action="decrease"
                     data-topic-id="${topicId}"
                     data-sub-id="${sub.id}"
                     data-rating="${level.key}">
+
                     −
+
                 </button>
+
 
                 <input
                     type="number"
@@ -148,16 +173,20 @@ function renderSubTopic(topicId, sub) {
                     value="${sub[level.key]}"
                     data-topic-id="${topicId}"
                     data-sub-id="${sub.id}"
-                    data-rating="${level.key}">
+                    data-rating="${level.key}"
+                    aria-label="${level.label}">
+
 
                 <button
                     type="button"
-                    class="number-btn"
+                    class="number-btn increase-btn"
                     data-action="increase"
                     data-topic-id="${topicId}"
                     data-sub-id="${sub.id}"
                     data-rating="${level.key}">
+
                     +
+
                 </button>
 
             </div>
@@ -166,43 +195,103 @@ function renderSubTopic(topicId, sub) {
 
     `).join("");
 
+
     return `
+
         <div class="sub-topic">
 
-            <h4>${topicId}.${sub.id} ${sub.name}</h4>
+            <div class="sub-topic-header">
+
+                <h4>
+                    ${topicId}.${sub.id} ${escapeHTML(sub.name)}
+                </h4>
+
+            </div>
+
 
             <div class="form-group">
+
                 <label>ชื่อหัวข้อย่อย</label>
 
                 <input
                     type="text"
-                    value="${sub.name}"
+                    value="${escapeHTML(sub.name)}"
                     data-topic-id="${topicId}"
                     data-sub-id="${sub.id}"
                     data-field="name">
+
             </div>
+
 
             <div class="rating-grid">
+
                 ${ratingInputs}
+
             </div>
 
+
+            <div class="subtopic-total">
+
+                <span>จำนวนผู้ตอบทั้งหมด</span>
+
+                <strong>${getSubTotal(sub)} คน</strong>
+
+            </div>
+
+
             <button
+                type="button"
                 class="btn btn-danger"
                 data-action="remove-subtopic"
                 data-topic-id="${topicId}"
                 data-sub-id="${sub.id}">
+
                 ลบหัวข้อย่อย
+
             </button>
 
         </div>
+
     `;
+
 }
 
 
+/* =========================================
+   6. HTML ESCAPE
+========================================= */
 
-/* =================================
-   ADD / REMOVE SUB TOPIC
-================================= */
+function escapeHTML(value) {
+
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[char]);
+
+}
+
+
+/* =========================================
+   7. GET SUB TOPIC TOTAL
+========================================= */
+
+function getSubTotal(sub) {
+
+    return ratingLevels.reduce((total, level) => {
+
+        return total + (Number(sub[level.key]) || 0);
+
+    }, 0);
+
+}
+
+
+/* =========================================
+   8. ADD / REMOVE / INCREASE / DECREASE
+========================================= */
 
 topicsContainer.addEventListener("click", event => {
 
@@ -210,29 +299,44 @@ topicsContainer.addEventListener("click", event => {
 
     if (!button) return;
 
+    const action = button.dataset.action;
+
     const topicId = Number(button.dataset.topicId);
 
     const topic = topics.find(item => item.id === topicId);
 
     if (!topic) return;
 
-    if (button.dataset.action === "add-subtopic") {
 
-        const newId = topic.subTopics.length + 1;
+    /* ADD SUB TOPIC */
+
+    if (action === "add-subtopic") {
+
+        const newId = Math.max(
+            0,
+            ...topic.subTopics.map(sub => sub.id)
+        ) + 1;
 
         topic.subTopics.push({
+
             id: newId,
+
             name: `หัวข้อย่อย ${newId}`,
+
             n5: 0,
             n4: 0,
             n3: 0,
             n2: 0,
             n1: 0
+
         });
 
     }
 
-    if (button.dataset.action === "remove-subtopic") {
+
+    /* REMOVE SUB TOPIC */
+
+    else if (action === "remove-subtopic") {
 
         const subId = Number(button.dataset.subId);
 
@@ -241,20 +345,62 @@ topicsContainer.addEventListener("click", event => {
         );
 
         topic.subTopics.forEach((sub, index) => {
+
             sub.id = index + 1;
+
         });
 
     }
 
+
+    /* INCREASE / DECREASE */
+
+    else if (action === "increase" || action === "decrease") {
+
+        const subId = Number(button.dataset.subId);
+
+        const rating = button.dataset.rating;
+
+        const sub = topic.subTopics.find(
+            item => item.id === subId
+        );
+
+        if (!sub || !ratingLevels.some(level => level.key === rating)) {
+            return;
+        }
+
+        if (action === "increase") {
+
+            sub[rating] = (Number(sub[rating]) || 0) + 1;
+
+        } else {
+
+            sub[rating] = Math.max(
+                0,
+                (Number(sub[rating]) || 0) - 1
+            );
+
+        }
+
+    }
+
+    else {
+
+        return;
+
+    }
+
+
     renderTopics();
+
     calculateResults();
 
 });
 
 
-/* =================================
-   INPUT EVENTS
-================================= */
+/* =========================================
+   9. INPUT EVENTS
+========================================= */
 
 topicsContainer.addEventListener("input", event => {
 
@@ -266,15 +412,19 @@ topicsContainer.addEventListener("input", event => {
 
     if (!topic) return;
 
-    // Main topic name
+
+    /* MAIN TOPIC NAME */
+
     if (input.classList.contains("topic-name")) {
 
         topic.name = input.value;
 
         calculateResults();
+
         return;
 
     }
+
 
     const subId = Number(input.dataset.subId);
 
@@ -284,54 +434,76 @@ topicsContainer.addEventListener("input", event => {
 
     if (!sub) return;
 
-    // Sub topic name
+
+    /* SUB TOPIC NAME */
+
     if (input.dataset.field === "name") {
 
         sub.name = input.value;
 
         calculateResults();
+
         return;
 
     }
 
-    // Rating values
+
+    /* RATING INPUT */
+
     const rating = input.dataset.rating;
 
-    if (rating) {
+    if (rating && ratingLevels.some(level => level.key === rating)) {
 
-        const value = Number(input.value);
+        const value = input.value;
 
-        sub[rating] = input.value === ""
-            ? 0
-            : Math.max(0, Number.isFinite(value) ? value : 0);
+        if (value === "") {
+
+            sub[rating] = 0;
+
+        } else {
+
+            const number = Number(value);
+
+            sub[rating] = Number.isFinite(number)
+                ? Math.max(0, Math.floor(number))
+                : 0;
+
+        }
+
+        calculateResults();
+
+        // Update total without rebuilding the input
+        const totalElement = input
+            .closest(".sub-topic")
+            ?.querySelector(".subtopic-total strong");
+
+        if (totalElement) {
+
+            totalElement.textContent = `${getSubTotal(sub)} คน`;
+
+        }
 
     }
-
-    calculateResults();
 
 });
 
 
-/* =================================
-   CALCULATE AVERAGE
-================================= */
+/* =========================================
+   10. CALCULATE AVERAGE
+========================================= */
 
 function calculateAverage(sub) {
 
-    const n5 = Number(sub.n5) || 0;
-    const n4 = Number(sub.n4) || 0;
-    const n3 = Number(sub.n3) || 0;
-    const n2 = Number(sub.n2) || 0;
-    const n1 = Number(sub.n1) || 0;
+    const total = getSubTotal(sub);
 
-    const total = n5 + n4 + n3 + n2 + n1;
+    const score = ratingLevels.reduce((sum, level) => {
 
-    const score =
-        (n5 * 5) +
-        (n4 * 4) +
-        (n3 * 3) +
-        (n2 * 2) +
-        (n1 * 1);
+        return sum + (
+            (Number(sub[level.key]) || 0) * level.score
+        );
+
+    }, 0);
+
 
     if (total === 0) {
 
@@ -342,59 +514,94 @@ function calculateAverage(sub) {
 
     }
 
+
     return {
+
         average: score / total,
+
         total: total
+
     };
 
 }
 
 
-/* =================================
-   CALCULATE ALL RESULTS
-================================= */
+/* =========================================
+   11. CALCULATE ALL RESULTS
+========================================= */
 
 function calculateResults() {
 
     const expectedTotal = Number(totalRespondentsInput.value);
 
+
     if (!Number.isInteger(expectedTotal) || expectedTotal < 1) {
 
-        resultsContainer.innerHTML =
-            '<p class="result-warning">กรุณากรอกจำนวนผู้ประเมินให้ถูกต้อง</p>';
+        resultsContainer.innerHTML = `
+
+            <p class="result-warning">
+
+                กรุณากรอกจำนวนผู้ประเมินให้ถูกต้อง
+
+            </p>
+
+        `;
 
         return;
 
     }
+
 
     if (topics.length === 0) {
 
-        resultsContainer.innerHTML =
-            '<p class="empty-message">ยังไม่มีหัวข้อประเมิน</p>';
+        resultsContainer.innerHTML = `
+
+            <p class="empty-message">
+
+                ยังไม่มีหัวข้อประเมิน
+
+            </p>
+
+        `;
 
         return;
 
     }
+
 
     let allSubtopicAverages = [];
 
     let html = "";
 
+
+    /* LOOP MAIN TOPICS */
+
     topics.forEach(topic => {
 
         html += `
+
             <div class="result-item">
 
-                <h3>${topic.id}. ${topic.name}</h3>
+                <h3>
+
+                    ${topic.id}. ${escapeHTML(topic.name)}
+
+                </h3>
+
         `;
 
+
         let topicAverages = [];
+
+
+        /* LOOP SUB TOPICS */
 
         topic.subTopics.forEach(sub => {
 
             const result = calculateAverage(sub);
 
             const isValid = result.total === expectedTotal;
+
 
             if (result.average !== null && isValid) {
 
@@ -404,13 +611,19 @@ function calculateResults() {
 
             }
 
+
             html += `
 
-                <div>
+                <div class="result-sub-item">
 
                     <strong>
-                        ${topic.id}.${sub.id} ${sub.name}
+
+                        ${topic.id}.${sub.id}
+
+                        ${escapeHTML(sub.name)}
+
                     </strong>
+
 
                     <div class="result-score">
 
@@ -422,16 +635,27 @@ function calculateResults() {
 
                     </div>
 
+
                     <p>
-                        จำนวนผู้ตอบ: ${result.total} / ${expectedTotal}
+
+                        จำนวนผู้ตอบ:
+
+                        ${result.total} / ${expectedTotal}
+
                     </p>
+
 
                     ${
                         result.average === null
+
                         ? '<p class="result-warning">ยังไม่มีข้อมูล</p>'
+
                         : isValid
+
                             ? '<p class="result-success">จำนวนผู้ตอบครบแล้ว</p>'
+
                             : '<p class="result-warning">จำนวนผู้ตอบไม่ตรงกับ N</p>'
+
                     }
 
                 </div>
@@ -440,24 +664,35 @@ function calculateResults() {
 
         });
 
-        // Main topic average
+
+        /* MAIN TOPIC AVERAGE */
+
         const topicAverage = topicAverages.length > 0
+
             ? topicAverages.reduce((sum, value) => sum + value, 0)
                 / topicAverages.length
+
             : null;
+
 
         html += `
 
             <hr>
 
-            <strong>ค่าเฉลี่ยหัวข้อหลัก</strong>
+            <div class="main-topic-average">
 
-            <div class="result-score">
-                ${
-                    topicAverage === null
-                    ? "-"
-                    : topicAverage.toFixed(2)
-                }
+                <strong>ค่าเฉลี่ยหัวข้อหลัก</strong>
+
+                <div class="result-score">
+
+                    ${
+                        topicAverage === null
+                        ? "-"
+                        : topicAverage.toFixed(2)
+                    }
+
+                </div>
+
             </div>
 
             </div>
@@ -467,14 +702,17 @@ function calculateResults() {
     });
 
 
-    /* =================================
+    /* =====================================
        OVERALL AVERAGE
-    ================================= */
+    ===================================== */
 
     const overallAverage = allSubtopicAverages.length > 0
+
         ? allSubtopicAverages.reduce((sum, value) => sum + value, 0)
             / allSubtopicAverages.length
+
         : null;
+
 
     html += `
 
@@ -483,25 +721,28 @@ function calculateResults() {
             <h3>ค่าเฉลี่ยรวมทั้งหมด</h3>
 
             <div class="result-score">
+
                 ${
                     overallAverage === null
                     ? "-"
                     : overallAverage.toFixed(2)
                 }
+
             </div>
 
         </div>
 
     `;
 
+
     resultsContainer.innerHTML = html;
 
 }
 
 
-/* =================================
-   RESPONDENT COUNT EVENT
-================================= */
+/* =========================================
+   12. RESPONDENT COUNT EVENT
+========================================= */
 
 totalRespondentsInput.addEventListener(
     "input",
@@ -509,8 +750,18 @@ totalRespondentsInput.addEventListener(
 );
 
 
-/* =================================
-   INITIALIZATION
-================================= */
+/* =========================================
+   13. INITIALIZATION
+========================================= */
+
+resultsContainer.innerHTML = `
+
+    <p class="empty-message">
+
+        กรุณากรอกข้อมูลเพื่อคำนวณ
+
+    </p>
+
+`;
 
 console.log("Evaluation Calculator is ready!");
