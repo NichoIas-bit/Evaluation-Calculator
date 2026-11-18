@@ -117,6 +117,7 @@ function renderTopics() {
    RENDER SUB TOPIC
 ================================= */
 
+
 function renderSubTopic(topicId, sub) {
 
     const ratingInputs = ratingLevels.map(level => `
@@ -125,32 +126,52 @@ function renderSubTopic(topicId, sub) {
 
             <label>
                 ${level.key.toUpperCase()} (${level.score})
+                - ${level.label}
             </label>
 
-            <input
-                type="number"
-                min="0"
-                step="1"
-                value="${sub[level.key]}"
-                data-topic-id="${topicId}"
-                data-sub-id="${sub.id}"
-                data-rating="${level.key}"
-                placeholder="จำนวนคน">
+            <div class="number-control">
+
+                <button
+                    type="button"
+                    class="number-btn"
+                    data-action="decrease"
+                    data-topic-id="${topicId}"
+                    data-sub-id="${sub.id}"
+                    data-rating="${level.key}">
+                    −
+                </button>
+
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="${sub[level.key]}"
+                    data-topic-id="${topicId}"
+                    data-sub-id="${sub.id}"
+                    data-rating="${level.key}">
+
+                <button
+                    type="button"
+                    class="number-btn"
+                    data-action="increase"
+                    data-topic-id="${topicId}"
+                    data-sub-id="${sub.id}"
+                    data-rating="${level.key}">
+                    +
+                </button>
+
+            </div>
 
         </div>
 
     `).join("");
 
     return `
-
         <div class="sub-topic">
 
-            <h4>
-                ${topicId}.${sub.id} ${sub.name}
-            </h4>
+            <h4>${topicId}.${sub.id} ${sub.name}</h4>
 
             <div class="form-group">
-
                 <label>ชื่อหัวข้อย่อย</label>
 
                 <input
@@ -159,7 +180,6 @@ function renderSubTopic(topicId, sub) {
                     data-topic-id="${topicId}"
                     data-sub-id="${sub.id}"
                     data-field="name">
-
             </div>
 
             <div class="rating-grid">
@@ -175,10 +195,9 @@ function renderSubTopic(topicId, sub) {
             </button>
 
         </div>
-
     `;
-
 }
+
 
 
 /* =================================
